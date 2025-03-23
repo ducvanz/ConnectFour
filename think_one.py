@@ -13,8 +13,8 @@ def get_move(game, turn):
     """
     # Try to win in one move
     for i in range(game.columns):
-        ai_board = deepcopy(game.board) 
-        if game.drop_piece(ai_board, i, turn) and game.check_win(ai_board, turn):
+        game_clone = deepcopy(game) 
+        if game_clone.drop_piece(i, turn) and game_clone.check_win(turn):
             return i
     
     # If no winning move found, choose a random valid column

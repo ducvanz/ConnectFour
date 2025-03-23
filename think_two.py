@@ -15,16 +15,28 @@ def get_move(game, turn):
     
     # Try to win in one move
     for i in range(game.columns):
-        ai_board = deepcopy(game.board)
-        if game.drop_piece(ai_board, i, turn) and game.check_win(ai_board, turn):
+        game_clone = deepcopy(game)
+        if game_clone.drop_piece(i, turn) and game_clone.check_win(turn):
             return i
     
     # Block opponent's winning move
     for i in range(game.columns):
-        ai_board = deepcopy(game.board)
-        if game.drop_piece(ai_board, i, opponent) and game.check_win(ai_board, opponent):
+        game_clone = deepcopy(game)
+        if game_clone.drop_piece(i, opponent) and game_clone.check_win(opponent):
             return i
+
+    avoid = []
+    # Look ahead to avoid moves that allow opponent to win next turn
+    for i in range(game.columns):
+        game_clone = deepcopy(game)
+        if game_clone.drop_piece(i, turn):
+            if game_clone.drop_piece(i, opponent) and game_clone.check_win(opponent):
+                avoid.append(i)
     
+    if avoid:
+        valid_columns = [c for c in range(game.columns) if c not in avoid and game.board[0][c] == 0]
+        return random.choice(valid_columns) if valid_columns else 0
+
     # If no strategic move found, choose a random valid column
     valid_columns = [c for c in range(game.columns) if game.board[0][c] == 0]
     return random.choice(valid_columns) if valid_columns else 0
