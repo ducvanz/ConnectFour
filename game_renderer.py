@@ -89,7 +89,7 @@ class GameRenderer:
         font = pg.font.Font(None, 50)
         
         text1 = "Choose AI Difficulty:"
-        text2 = "Press 1 (Level 1), 2 (Level 2), or 3 (Level 3)"
+        text2 = "Press 1 to 4 for choosing AI level 1 to 4"
         
         shadow_surface1 = font.render(text1, True, self.BLACK)
         text_surface1 = font.render(text1, True, self.BLUE)
@@ -112,7 +112,7 @@ class GameRenderer:
         while waiting:
             for event in pg.event.get():
                 if event.type == pg.KEYDOWN:
-                    if event.key in [pg.K_1, pg.K_2, pg.K_3]:
+                    if event.key in [pg.K_1, pg.K_2, pg.K_3, pg.K_4]:
                         return AIDifficulty(int(event.unicode))
                 elif event.type == pg.QUIT:
                     return None

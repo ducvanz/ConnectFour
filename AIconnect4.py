@@ -4,12 +4,14 @@ from enum import Enum
 import think_one
 import think_two
 import think_three
+import MCTS
 
 # Enum for AI difficulty levels
 class AIDifficulty(Enum):
     LEVEL_1 = 1
     LEVEL_2 = 2
     LEVEL_3 = 3
+    LEVEL_4 = 4
 
 class ConnectFour:
     def __init__(self):
@@ -101,9 +103,14 @@ class ConnectFour:
     def get_ai_move(self):
         """Generate an AI move based on selected difficulty level."""
         # Call the appropriate AI module based on difficulty level
-        if self.ai_level == AIDifficulty.LEVEL_1:
-            return think_one.get_move(self)
-        elif self.ai_level == AIDifficulty.LEVEL_2:
-            return think_two.get_move(self)
-        else:
-            return think_three.get_move(self)
+        match self.ai_level:
+            case AIDifficulty.LEVEL_1:
+                return think_one.get_move(self)
+            case AIDifficulty.LEVEL_2:
+                return think_two.get_move(self)
+            case AIDifficulty.LEVEL_3:
+                return think_three.get_move(self)
+            case AIDifficulty.LEVEL_4:
+                return MCTS.mcts(self)  # Using level 3 for level 4 as fallback
+            case _:
+                return think_three.get_move(self)  # Default case
