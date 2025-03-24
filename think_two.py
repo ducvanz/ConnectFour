@@ -1,36 +1,38 @@
 from copy import deepcopy
 import random
 
-def get_move(game, turn):
+def get_move(game):
     """AI that checks for winning moves and blocks opponent's winning moves.
     
     Args:
         game: The game instance
-        turn: The current turn (1 for red, -1 for yellow)
         
     Returns:
         int: Column index for the move
     """
+    turn = game.turn  # Use the game's current turn
     opponent = -turn
     
     # Try to win in one move
     for i in range(game.columns):
         game_clone = deepcopy(game)
-        if game_clone.drop_piece(i, turn) and game_clone.check_win(turn):
+        if game_clone.drop_piece(i) and game_clone.check_win(turn):
             return i
     
     # Block opponent's winning move
     for i in range(game.columns):
         game_clone = deepcopy(game)
-        if game_clone.drop_piece(i, opponent) and game_clone.check_win(opponent):
+        game_clone.turn = opponent  # Set the turn to opponent for the clone
+        if game_clone.drop_piece(i) and game_clone.check_win(opponent):
             return i
 
     avoid = []
     # Look ahead to avoid moves that allow opponent to win next turn
     for i in range(game.columns):
         game_clone = deepcopy(game)
-        if game_clone.drop_piece(i, turn):
-            if game_clone.drop_piece(i, opponent) and game_clone.check_win(opponent):
+        if game_clone.drop_piece(i):  # This changes turn to opponent
+            # Check if dropping in the same column would give opponent a win
+            if game_clone.drop_piece(i) and game_clone.check_win(opponent):
                 avoid.append(i)
     
     if avoid:

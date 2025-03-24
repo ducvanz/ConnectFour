@@ -31,20 +31,19 @@ class ConnectFour:
         """Create an empty game board."""
         return np.zeros((self.rows, self.columns), dtype=int)
     
-    def drop_piece(self, column, turn):
+    def drop_piece(self, column):
         """Attempt to drop a piece in the specified column.
         
         Args:
-            board: The game board
             column: Column index to drop the piece
-            turn: Player's turn (1 for red, -1 for yellow)
             
         Returns:
             bool: True if the piece was successfully dropped, False otherwise
         """
         for row in range(self.rows - 1, -1, -1):
             if self.board[row][column] == 0:
-                self.board[row][column] = turn
+                self.board[row][column] = self.turn
+                self.turn *= -1  # Toggle turn after successful move
                 return True
         return False
     
@@ -56,9 +55,8 @@ class ConnectFour:
         
         # If AI goes first, make its move
         if self.turn == -1:
-            ai_col = self.get_ai_move(self.turn)
-            self.drop_piece(ai_col, self.turn)
-            self.turn = 1
+            ai_col = self.get_ai_move()
+            self.drop_piece(ai_col)  # This will toggle turn to 1 automatically
         return True
     
     def check_horizontal_win(self, turn):
@@ -100,12 +98,12 @@ class ConnectFour:
                 self.check_diagonal_down_win(turn) or 
                 self.check_diagonal_up_win(turn))
     
-    def get_ai_move(self, turn):
+    def get_ai_move(self):
         """Generate an AI move based on selected difficulty level."""
         # Call the appropriate AI module based on difficulty level
         if self.ai_level == AIDifficulty.LEVEL_1:
-            return think_one.get_move(self, turn)
+            return think_one.get_move(self)
         elif self.ai_level == AIDifficulty.LEVEL_2:
-            return think_two.get_move(self, turn)
+            return think_two.get_move(self)
         else:
-            return think_three.get_move(self, turn)
+            return think_three.get_move(self)

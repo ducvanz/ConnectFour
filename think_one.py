@@ -1,20 +1,21 @@
 from copy import deepcopy
 import random
 
-def get_move(game, turn):
+def get_move(game):
     """Simple AI that checks for immediate winning moves.
     
     Args:
         game: The game instance
-        turn: The current turn (1 for red, -1 for yellow)
         
     Returns:
         int: Column index for the move
     """
+    turn = game.turn  # Use the game's current turn
+    
     # Try to win in one move
     for i in range(game.columns):
         game_clone = deepcopy(game) 
-        if game_clone.drop_piece(i, turn) and game_clone.check_win(turn):
+        if game_clone.drop_piece(i) and game_clone.check_win(turn):
             return i
     
     # If no winning move found, choose a random valid column

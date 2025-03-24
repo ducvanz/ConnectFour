@@ -174,10 +174,10 @@ class GameRenderer:
         self.game.reset_game(player_choice, ai_level)
         return True
 
-    def handle_win(self, turn):
+    def handle_win(self, player):
         """Handle win condition and reset game if needed."""
-        if self.game.check_win(turn):
-            self.show_win_notification(turn)
+        if self.game.check_win(player):
+            self.show_win_notification(player)
             pg.time.delay(1000)
             if not self.show_continue_prompt():
                 return "quit"
@@ -204,26 +204,25 @@ class GameRenderer:
                     pos_x = event.pos[0]
                     col = pos_x // self.game.square
                     
-                    if self.game.drop_piece(col, self.game.turn):
+                    current_player = self.game.turn  # Save current player before the move
+                    
+                    if self.game.drop_piece(col):  # This also toggles the turn
                         self.draw_game()
-                        win_status = self.handle_win(self.game.turn)
+                        win_status = self.handle_win(current_player)
                         if win_status == "quit":
                             running = False
                             break
                         if not win_status:
-                            self.game.turn *= -1
-                            
-                            # AI's turn
+                            # AI's turn (if it's now AI's turn after the player's move)
                             if self.game.turn == -1:
-                                ai_col = self.game.get_ai_move(self.game.turn)
-                                if self.game.drop_piece(ai_col, self.game.turn):
+                                ai_col = self.game.get_ai_move()
+                                current_ai = self.game.turn  # Save AI's turn
+                                if self.game.drop_piece(ai_col):  # This also toggles the turn back to player
                                     self.draw_game()
-                                    win_status = self.handle_win(self.game.turn)
+                                    win_status = self.handle_win(current_ai)
                                     if win_status == "quit":
                                         running = False
                                         break
-                                    if not win_status:
-                                        self.game.turn *= -1
                                         
                         self.draw_game()
                         
