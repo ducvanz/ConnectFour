@@ -28,6 +28,12 @@ class ConnectFour:
         self.board = self.create_board()
         self.turn = 1  # 1: red, -1: yellow
         self.ai_level = AIDifficulty.LEVEL_3  # Default AI level
+        self.ai_timeouts = {
+            AIDifficulty.LEVEL_1: 0.5,
+            AIDifficulty.LEVEL_2: 0.5,
+            AIDifficulty.LEVEL_3: 1.0,
+            AIDifficulty.LEVEL_4: 2.0
+        }
         
     def create_board(self):
         """Create an empty game board."""
@@ -100,8 +106,17 @@ class ConnectFour:
                 self.check_diagonal_down_win(turn) or 
                 self.check_diagonal_up_win(turn))
     
-    def get_ai_move(self):
-        """Generate an AI move based on selected difficulty level."""
+    def get_ai_move(self, timeout=None):
+        """Generate an AI move based on selected difficulty level.
+        
+        Args:
+            timeout: Optional timeout in seconds for AI computation.
+                    If None, use default timeout for AI level.
+        """
+        # Use provided timeout or default for AI level
+        if timeout is None:
+            timeout = self.ai_timeouts[self.ai_level]
+            
         # Call the appropriate AI module based on difficulty level
         match self.ai_level:
             case AIDifficulty.LEVEL_1:
@@ -109,8 +124,8 @@ class ConnectFour:
             case AIDifficulty.LEVEL_2:
                 return think_two.get_move(self)
             case AIDifficulty.LEVEL_3:
-                return think_three.get_move(self)
+                return think_three.get_move(self, max_time=timeout)
             case AIDifficulty.LEVEL_4:
-                return MCTS.mcts(self)  # Using level 3 for level 4 as fallback
+                return MCTS.mcts(self, max_time=timeout)
             case _:
-                return think_three.get_move(self)  # Default case
+                return think_three.get_move(self, max_time=timeout)  # Default case
