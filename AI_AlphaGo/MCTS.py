@@ -108,7 +108,7 @@ def next_move(counts, wins, losses, valid_columns):
         
     return max(scores, key=scores.get)
 
-def mcts(game, num_rollouts=1000, temperature=sqrt(2), max_time=1.0):
+def get_move(game, num_rollouts=1000, temperature=sqrt(2), max_time=1.0):
     """Run Monte Carlo Tree Search to find the best move.
     
     Args:
@@ -159,6 +159,8 @@ def mcts(game, num_rollouts=1000, temperature=sqrt(2), max_time=1.0):
             counts, wins, losses = backpropagate(game.turn, move, reward, counts, wins, losses)
             
             rollouts_completed += 1
+
+            # print(counts.values(), ' ', wins.values(), ' ', losses.values(), '\n')
             
         except Exception as e:
             print(f"Error in MCTS simulation: {e}")
