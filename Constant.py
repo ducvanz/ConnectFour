@@ -5,7 +5,7 @@ YELLOW  = - RED
 IDLE    = 0             # Ô trống, chưa đánh
 
 
-WIDTH = 800             # Screen width
+WIDTH = 700             # Screen width
 FIRST_MOVING = RED
 
 DISPLAY_TURN_RUNTIME = False        # Thời gian chạy của từng turn (do MatchMaker đếm)

@@ -2,7 +2,12 @@
 
 import numpy as np
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from Constant import RED, YELLOW, IDLE
+
 
 class ConnectFourBoard:
     ###
@@ -75,7 +80,7 @@ class ConnectFourBoard:
 
         return ((self.rows - 1) - np.count_nonzero(self.board, axis=0))
 
-    def get_avalable_columns(self) :
+    def get_available_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""
         return np.where(self.get_available() > -1)[0]
 
