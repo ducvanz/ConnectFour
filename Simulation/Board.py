@@ -24,7 +24,7 @@ class ConnectFourBoard:
     #       history         :   history[RED] sẽ lưu trữ lịch sử đấu của RED
     ###
 
-    def __init__(self, shape:tuple[int, int] =(7, 7), first_to_move:int =RED, save_history:bool =False):
+    def __init__(self, shape:tuple[int, int] =(6, 7), first_to_move:int =RED, save_history:bool =False):
         """Initialize the Connect Four game."""
         # Board dimensions
         self.rows = shape[0]
@@ -46,7 +46,7 @@ class ConnectFourBoard:
         """Append history-stack of the game board, if it did save history"""
 
         if hasattr(self, 'history') :           # if this board was initilized with history
-            self.history[self.turn].append[(current_state, move_valuate)]
+            self.history[self.turn].append((current_state.copy(), move_valuate))
 
     def create_board(self, initilize_state:np.array =None):
         """Create an empty game board."""
@@ -234,4 +234,7 @@ class ConnectFourBoard:
         """Check if the board is full of piece. There no place to keep playing"""
 
         return np.count_nonzero(self.board) == self.board.size
+    
+    def print_his(self):
+        print(self.history[RED])
     

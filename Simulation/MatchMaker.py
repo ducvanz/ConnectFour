@@ -7,6 +7,8 @@ import argparse
 import random
 from enum import Enum
 import traceback
+import numpy as np
+import pickle
 
 
 import sys
@@ -19,6 +21,7 @@ from AI_AlphaGo.think_one import Think_One
 from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
+from AI_AlphaGo.minimaxAndMCTS import minimaxAndMcts
 
 from Human import Hugeman
 
@@ -74,7 +77,7 @@ class MatchMaker:
             ai2_timeout: Maximum time in seconds for AI 2 to compute a move
         """
 
-        self.game = ConnectFourBoard(first_to_move=FIRST_MOVING)
+        self.game = ConnectFourBoard(first_to_move=FIRST_MOVING, save_history= True)
 
         # Setup user interface window
         self.width = width
@@ -92,6 +95,7 @@ class MatchMaker:
         self.player2 = player2
         
         self.stats = {"ai1_wins": 0, "ai2_wins": 0, "draws": 0}
+        self.history_games = []
 
         
         # Initialize pygame if needed
@@ -241,9 +245,11 @@ class MatchMaker:
                 print('Randomize move will kick in')
                 time.sleep(5)
 
-                valid_columns = self.game.get_available()
+                valid_columns = self.game.get_available_columns()
                 if len(valid_columns) != 0:
                     col = random.choice(valid_columns)
+                    evaluate = np.zeros((self.game.columns,))
+                    evaluate[col] = 1
                 else:
                     # No valid moves cause board is full. Game is a draw
                     game_over = True
@@ -282,9 +288,9 @@ class MatchMaker:
             # Add delay for visualization
             if self.display_game and self.delay > 0:
                 time.sleep(self.delay)
-
+                
             current_turn = -current_turn
-        # End of game loop
+
 
 
         # Show the final state and winner
@@ -304,6 +310,7 @@ class MatchMaker:
                 pg.display.set_caption(f"AI vs AI - Game {i}/{self.games} - {ai1_name} vs {ai2_name}")
             
             result = self.play_game()
+            self.history_games.append(self.game)
             if result is None:  # User quit
                 break
                 
@@ -320,6 +327,32 @@ class MatchMaker:
         if self.display_game:
             pg.quit()
 
+    def prepare_training_data(self):
+        """
+        Chỉ lấy dữ liệu từ người chiến thắng
+        Trả về:
+            X: các trạng thái bàn cờ khi người thắng thực hiện nước đi (7,6,1)
+            y: các nước đi tương ứng của người thắng (one-hot vector 7 chiều)
+        """
+        X = []
+        y = []
+        history_games = self.history_games
+        for game in history_games:
+            # Xác định người chiến thắng
+            winner = None
+            if game.check_win(RED):
+                winner = RED
+            elif game.check_win(YELLOW):
+                winner = YELLOW
+            else:
+                continue  # Bỏ qua nếu hòa
+                
+            # Chỉ lấy các nước đi của người thắng
+            for state, move_valuated in game.history[winner]:
+                X.append(state)
+                y.append(move_valuated)
+        
+        return np.array(X), np.array(y)
 # Chưa chỉnh lại cmd
 def main():
     # Parse command line arguments
@@ -369,16 +402,19 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MinimaxAI(WIDTH),
-        player2=Think_Three(timeout=0.5),
+        player1=MinimaxAI(timeout=2.5),
+        player2=minimaxAndMcts(timeout=2.5),
         display_game=True,
         delay=0.5,
-        games=1
+        games=2
     )
 
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
-
-
+    X, y = ai_vs_ai.prepare_training_data()
+    print(X.shape)
+    print(X[1], y[1])
+    with open("/DL/Files/data.pkl", "wb") as f:
+        pickle.dump((X, y), f)
 
