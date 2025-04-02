@@ -1,6 +1,9 @@
 ### Tên file gốc:   AIconnect4.py
 
 import numpy as np
+from copy import deepcopy
+import os
+import pickle
 
 import sys
 import os
@@ -42,17 +45,19 @@ class ConnectFourBoard:
                     = {RED:    [],
                        YELLOW: []}
         
-    def append_history(self, current_state:np.array, move_valuate:np.array) :
+    def append_history(self, color:int, current_state:np.array, move_valuate:np.array) :
         """Append history-stack of the game board, if it did save history"""
 
         if hasattr(self, 'history') :           # if this board was initilized with history
-            self.history[self.turn].append[(current_state, move_valuate)]
+            self.history[self.turn].append[(current_state * color, move_valuate)]
 
     def create_board(self, initilize_state:np.array =None):
         """Create an empty game board."""
 
         if initilize_state is not None :
-            self.board = initilize_state
+            self.board = deepcopy(initilize_state)
+            self.shape = self.board.shape
+            self.rows, self.columns = self.shape
         else :
             self.board = np.zeros(shape=(self.rows, self.columns)) 
 
@@ -63,10 +68,7 @@ class ConnectFourBoard:
         self.first_to_move = firstMoving
         self.turn = firstMoving
         
-        if initilize_state is None :
-            self.board = np.zeros(self.shape)
-        else :
-            self.board = initilize_state
+        self.create_board(initilize_state)
 
         if hasattr(self, 'history') :
             self.history[RED] = []
@@ -103,7 +105,7 @@ class ConnectFourBoard:
                 move_valuated = np.zeros((self.columns,))
                 move_valuated[column] = 1
 
-            self.append_history(self.board, move_valuated)
+            self.append_history(self.turn, self.board, move_valuated)
 
             self.board[row, column] = self.turn
             self.turn = -self.turn      
@@ -235,3 +237,30 @@ class ConnectFourBoard:
 
         return np.count_nonzero(self.board) == self.board.size
     
+    def copy(self) :
+        clone = ConnectFourBoard(shape=self.shape, save_history=False)
+        clone.reset_game(self.turn, self.board)
+        return clone
+    
+    def export_history(self, color, file_path='data/DefaultSet.npz') :
+        """Append dữ liệu mới vào file pickle mà không cần đọc toàn bộ"""
+
+        mode = "ab" if os.path.exists(file_path) else "wb"
+    
+        with open(file_path, mode) as f:
+            pickle.dump(self.history[color], f)
+
+def load_history_data(file_path) :
+    """Khuyến khích tự viết lại hàm load, không thì bay RAM"""
+
+    data_list = []
+    
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            try:
+                while True:
+                    data_list.append(pickle.load(f))
+            except EOFError:
+                pass  # Đọc hết file thì dừng
+    
+    return data_list

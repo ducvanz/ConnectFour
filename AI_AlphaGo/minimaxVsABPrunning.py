@@ -1,12 +1,14 @@
 from copy import deepcopy
 import random
 import numpy as np
+import numpy
+import math
+
 
 import sys
 import os
-import numpy
-import math
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from Simulation.Board import ConnectFourBoard
 from Constant import RED, YELLOW, IDLE 
 
@@ -24,15 +26,18 @@ class MinimaxAI:
     def evaluate_window(self, window, piece):
         """Evaluate a 4-cell window and return a score."""
         score = 0
-        opp_piece = YELLOW if piece == RED else RED  # Opponent piece
+        opp_piece = -piece  # Opponent piece
         if window.count(piece) == 4:
             score += 100
         elif window.count(piece) == 3 and window.count(IDLE) == 1:
             score += 5
         elif window.count(piece) == 2 and window.count(IDLE) == 2:
             score += 2
-        if window.count(opp_piece) == 3 and window.count(IDLE) == 1:
-            score -= 4
+
+        if window.count(opp_piece) == 4:
+            score -= 200    
+        elif window.count(opp_piece) == 3 and window.count(IDLE) == 1:
+            score -= 50
         return score
 
     def evaluate(self, game: ConnectFourBoard):
@@ -141,6 +146,6 @@ class MinimaxAI:
                         break  # Prune
             return best_column, value
 
-    def get_move(self, game: ConnectFourBoard):
+    def get_move(self, game: ConnectFourBoard, depth=5):
         """Get the best move for the AI using Minimax."""
-        return self.minimax(game, 6, -math.inf, math.inf, True)
+        return self.minimax(game, depth, -math.inf, math.inf, True)

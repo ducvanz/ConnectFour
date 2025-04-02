@@ -18,6 +18,7 @@ from Board import ConnectFourBoard
 from AI_AlphaGo.think_one import Think_One
 from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
+from AI_AlphaGo.MCTS import MonteCarloTreeSearch
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
 
 from Human import Hugeman
@@ -369,8 +370,8 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MinimaxAI(WIDTH),
-        player2=Think_Three(timeout=0.5),
+        player1=MonteCarloTreeSearch(),
+        player2=MinimaxAI(),
         display_game=True,
         delay=0.5,
         games=1
