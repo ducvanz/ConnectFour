@@ -74,7 +74,8 @@ class MinimaxAI:
 
     def minimax(self, game: ConnectFourBoard, depth: int, alpha: float, beta: float, maximizingPlayer: bool):
         """Minimax algorithm with alpha-beta pruning to find the best move."""
-        valid_columns = game.get_available_columns()
+        game = deepcopy(game)
+        valid_columns = game.get_available_columns() 
         terminal = game.check_win(RED) or game.check_win(YELLOW) or game.is_full()
 
         if depth == 0 or terminal:
@@ -118,6 +119,7 @@ class MinimaxAI:
         else:  # YELLOW player
             value = math.inf
             best_column = np.random.choice(valid_columns)
+
             for col in valid_columns:
                 # Backup current state
                 temp_board = game.board.copy()
@@ -140,7 +142,9 @@ class MinimaxAI:
                     if alpha >= beta:
                         break  # Prune
             return best_column, value
+    
 
     def get_move(self, game: ConnectFourBoard):
         """Get the best move for the AI using Minimax."""
         return self.minimax(game, 6, -math.inf, math.inf, True)
+        
