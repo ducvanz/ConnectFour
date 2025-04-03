@@ -80,7 +80,7 @@ class ConnectFourBoard:
         Ví dụ: Cột 3 còn 3 vị trí trống thì: available[3] = 2
         """
 
-        return ((self.rows - 1) - np.count_nonzero(self.board, axis=0))
+        return (self.rows - 1) - np.count_nonzero(self.board, axis=0)
 
     def get_available_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""

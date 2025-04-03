@@ -167,13 +167,13 @@ def next_move(game:ConnectFourBoard, counts, wins, losses, valid_columns):
     scores = [0] * game.columns
     for k in valid_columns:
         if k not in counts or counts[k] == 0:
-            scores[k] = 1
+            scores[k] = 0.5
         else:
             # Calculate score as win rate
-            scores[k] = 1 + (wins.get(k, 0) - losses.get(k, 0)) / counts[k]
+            scores[k] = 0.5 + (wins.get(k, 0) - losses.get(k, 0)) / counts[k]
         
     if not scores:
         return None, None
+    
     # print(scores)
-        
     return scores.index(max(scores)), scores

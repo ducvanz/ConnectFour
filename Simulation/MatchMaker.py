@@ -7,19 +7,21 @@ import argparse
 import random
 from enum import Enum
 import traceback
+import numpy as np
 
 
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))         # Để import file từ folder khác
 
-from Constant import RED, YELLOW, WIDTH, FIRST_MOVING, DISPLAY_TURN_RUNTIME
+from Constant import RED, YELLOW, WIDTH, FIRST_MOVING
 from Board import ConnectFourBoard
 from AI_AlphaGo.think_one import Think_One
 from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
 from AI_AlphaGo.MCTS import MonteCarloTreeSearch
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
+from AI_AlphaGo.Combine import Combine_MCTS_Minimax
 
 from Human import Hugeman
 
@@ -62,7 +64,10 @@ class MatchMaker:
     def __init__(self, 
                  player1, player2, 
                  display_game=True, delay=0.5, games=1, 
-                 width = WIDTH):
+                 width = WIDTH,
+                 export_path:str =None,
+                 sleep_between_games=1,
+                 display_turn_runtime=True):
         """Initialize the AI vs AI game runner.
         
         Args:
@@ -87,12 +92,18 @@ class MatchMaker:
         self.display_game = display_game
         self.delay = delay
         self.games = games
+        self.display_turn_runtime = display_turn_runtime
+        self.sleep_between_games = sleep_between_games
         
         # Setup player
         self.player1 = player1
         self.player2 = player2
         
         self.stats = {"ai1_wins": 0, "ai2_wins": 0, "draws": 0}
+
+        if (export_path is not None) and (export_path.endswith('.npz')) :
+            export_path = str.join(export_path, '.npz')
+        self.export_path = export_path
 
         
         # Initialize pygame if needed
@@ -275,7 +286,7 @@ class MatchMaker:
                 self.stats["draws"] += 1
 
             # Record actual compute time for debugging
-            if DISPLAY_TURN_RUNTIME :
+            if self.display_turn_runtime :
                 compute_time = time.time() - move_start_time
                 if compute_time > 0.0:  # Only report if it took more than the threshold
                     print(f"{current_player.name} computed move in {compute_time:.2f}s")
@@ -286,13 +297,18 @@ class MatchMaker:
 
             current_turn = -current_turn
         # End of game loop
+        print(self.game.board)
 
 
         # Show the final state and winner
         if self.display_game:
             self.show_win_notification(winner)
-            time.sleep(1)  # Give some time to see the winner
+            time.sleep(self.sleep_between_games)  # Give some time to see the winner
         
+        if self.export_path is not None :
+            if winner != 0 :
+                self.game.export_history(winner, self.export_path)
+
         return winner
     
     def run(self):
@@ -370,16 +386,22 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MonteCarloTreeSearch(),
-        player2=MinimaxAI(),
+        player1=Combine_MCTS_Minimax(p=0.3, codeName=1),
+        player2=Combine_MCTS_Minimax(p=0.3, codeName=2),
         display_game=True,
-        delay=0.5,
-        games=1
+        delay=0,
+        games=20,
+        export_path=None,           ### *.npz
+        sleep_between_games=0,
+        display_turn_runtime=True
     )
 
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
+
+    print(ai_vs_ai.player1.stat)
+    print(ai_vs_ai.player2.stat)
 
 
 
