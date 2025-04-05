@@ -1,6 +1,8 @@
 ### Tên file gốc:   AIconnect4.py
 
 import numpy as np
+import pickle
+from copy import deepcopy
 
 from Constant import RED, YELLOW, IDLE
 
@@ -33,6 +35,7 @@ class ConnectFourBoard:
 
         if save_history :
             # Each record contain [current_state, move_valuation]. Will helpl on training DQN model
+            print('Has history')
             self.history:dict[int: list[tuple[np.array, np.array]]] \
                     = {RED:    [],
                        YELLOW: []}
@@ -41,13 +44,19 @@ class ConnectFourBoard:
         """Append history-stack of the game board, if it did save history"""
 
         if hasattr(self, 'history') :           # if this board was initilized with history
+<<<<<<< Updated upstream
             self.history[self.turn].append[(current_state, move_valuate)]
+=======
+            self.history[self.turn].append((deepcopy(current_state) * self.turn, move_valuate))
+>>>>>>> Stashed changes
 
     def create_board(self, initilize_state:np.array =None):
         """Create an empty game board."""
 
         if initilize_state is not None :
-            self.board = initilize_state
+            self.board = deepcopy(initilize_state)
+            self.shape = initilize_state.shape
+            self.rows, self.columns = initilize_state.shape
         else :
             self.board = np.zeros(shape=(self.rows, self.columns)) 
 
@@ -58,10 +67,8 @@ class ConnectFourBoard:
         self.first_to_move = firstMoving
         self.turn = firstMoving
         
-        if initilize_state is None :
-            self.board = np.zeros(self.shape)
-        else :
-            self.board = initilize_state
+        self.create_board(initilize_state)
+
 
         if hasattr(self, 'history') :
             self.history[RED] = []
@@ -77,7 +84,20 @@ class ConnectFourBoard:
 
     def get_avalable_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""
-        return np.where(self.get_available() > -1)[0]
+        unordered = np.where(self.get_available() > -1)[0]
+        mid = unordered.size // 2  # Xác định chỉ mục giữa
+        ordered = [unordered[mid]]  # Bắt đầu với phần tử ở giữa
+        
+        left, right = mid - 1, mid + 1
+        while left >= 0 or right < unordered.size:
+            if right < unordered.size:
+                ordered.append(unordered[right])
+                right += 1
+            if left >= 0:
+                ordered.append(unordered[left])
+                left -= 1
+        
+        return ordered
 
     def drop_piece(self, column:int, move_valuated:np.array=None):
         """Attempt to drop a piece in the specified column.
@@ -229,4 +249,48 @@ class ConnectFourBoard:
         """Check if the board is full of piece. There no place to keep playing"""
 
         return np.count_nonzero(self.board) == self.board.size
+<<<<<<< Updated upstream
+=======
+    
+    def copy(self) :
+        clone = ConnectFourBoard(shape=self.shape, save_history=False)
+        clone.reset_game(self.turn, self.board)
+        return clone
+    
+    def export_history(self, color, train_file_path='data/DefaultTrainingSet.npy', label_file_path='data/DefaultLabelSet.npy') :
+        """Append dữ liệu mới vào file .npy"""
+
+        if len(self.history[color]) <= 4:       # bỏ qua việc export đối với trận đấu quá ngắn (do AI lỗi)
+            return
+
+        # Tách train_data và label_data từ danh sách các tuple
+        new_train_data = np.squeeze(np.array([x[0] for x in self.history[color][2:]]))      # bỏ qua 2 turn đầu mỗi bên, vì nó ko hiệu quả lắm
+        new_label_data = np.squeeze(np.array([x[1] for x in self.history[color][2:]]))
+
+        if os.path.exists(train_file_path) and os.path.exists(label_file_path) :
+            # Load lại dữ liệu cũ
+            train_data = np.squeeze(np.load(train_file_path))
+            label_data = np.squeeze(np.load(label_file_path))
+
+            # Append dữ liệu mới
+            new_train_data = np.concatenate((train_data, new_train_data), axis=0)
+            new_label_data = np.concatenate((label_data, new_label_data), axis=0)
+
+        np.save(train_file_path, new_train_data)
+        np.save(label_file_path, new_label_data)
+
+
+def load_history_data(train_file_path='data/DefaultTrainingSet.npy', label_file_path='data/DefaultLabelSet.npy') :
+    """Khuyến khích tự viết lại hàm load, không thì bay RAM"""
+
+    train_data = None
+    label_data = None
+
+    if os.path.exists(train_file_path) and os.path.exists(label_file_path):
+            # Load lại dữ liệu cũ
+        train_data = np.load(train_file_path)
+        label_data = np.load(label_file_path)
+    
+    return train_data, label_data
+>>>>>>> Stashed changes
     
