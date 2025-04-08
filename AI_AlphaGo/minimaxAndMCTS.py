@@ -1,3 +1,7 @@
+from Simulation.Board import ConnectFourBoard
+from AI_AlphaGo.MCTS import select, backpropagate, simulate, expand
+from Constant import RED, YELLOW, IDLE 
+from copy import deepcopy
 import random
 import numpy as np
 import math
@@ -5,15 +9,6 @@ import time
 from math import sqrt, log
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
-
-
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from Simulation.Board import ConnectFourBoard
-from AI_AlphaGo.MCTS import select, backpropagate, simulate, expand
-from Constant import RED, YELLOW, IDLE 
 
 class minimaxAndMcts:
     def __init__(self, color=RED, timeout=5):
@@ -24,11 +19,11 @@ class minimaxAndMcts:
         self.max_simulations = 1000
         self.min_simulations = 100 
         self.heuristic_weights = { # tính điểm cho hàm heuristic
-            'win': 100,
-            'three_in_row': 5,
-            'two_in_row': 2,
-            'center_control': 3,
-            'potential_threats': 6
+            'win': 100000,
+            'three_in_row': 1000,
+            'two_in_row': 100,
+            'center_control': 50,
+            'potential_threats': 200
         }
         self.stats = defaultdict(lambda: {'count': 0, 'wins': 0, 'losses': 0})
         
@@ -42,17 +37,17 @@ class minimaxAndMcts:
         best_value = -math.inf if self.color == RED else math.inf
         
         available_moves = self.order_moves_by_heuristic(game)
-        # print(f"Available moves ordered: {available_moves}")  # Debug
+        print(f"Available moves ordered: {available_moves}")  # Debug
         
         for move in available_moves:
             if time.time() - start_time > self.max_time * 0.9:
                 break
                 
-            temp_game = game.copy()
+            temp_game = deepcopy(game)
             temp_game.drop_piece(move)
             
             move_value = self.parallel_mcts(temp_game)
-            # print(f"Move {move} value: {move_value}")  # Debug
+            print(f"Move {move} value: {move_value}")  # Debug
             
             # Sửa lại logic so sánh CHÍNH XÁC
             if (self.color == RED and move_value > best_value) or \
@@ -60,7 +55,7 @@ class minimaxAndMcts:
             (best_move is None):
                 best_value = move_value
                 best_move = move
-                # print(f"New best move: {best_move} (value: {best_value})")  # Debug
+                print(f"New best move: {best_move} (value: {best_value})")  # Debug
         
         # Đảm bảo luôn có nước đi hợp lệ
         if best_move is None and available_moves:
@@ -89,8 +84,9 @@ class minimaxAndMcts:
     
     def order_moves_by_heuristic(self, game: ConnectFourBoard):
         """Lấy danh sách các nước đi, ưu tiên cột trung tâm"""
-        moves = game.get_available_columns()        # get_columns sắp xếp phân kỳ sẵn rồi.
-        return moves
+        moves = game.get_available_columns()
+        center = game.columns // 2
+        return sorted(moves, key=lambda x: -abs(x - center))
     
     def parallel_mcts(self, game_state):
         start_time = time.time()
@@ -103,7 +99,7 @@ class minimaxAndMcts:
                     break
                 futures.append(executor.submit(
                     self.run_single_simulation, 
-                    game_state.copy())
+                    deepcopy(game_state))
                 )
             
             for future in as_completed(futures):
@@ -131,7 +127,7 @@ class minimaxAndMcts:
     
     def run_single_simulation(self, game_state: ConnectFourBoard):
         """Run one complete MCTS simulation"""
-        current_state = game_state.copy()
+        current_state = deepcopy(game_state)
         move = self.select_move(current_state)
         result = simulate(expand(current_state, move))
         return move, result
@@ -142,8 +138,8 @@ class minimaxAndMcts:
         if not legal_moves:
             return None
         
-        # print(f"Legal moves: {legal_moves}")  # Debug
-        # print(f"Current stats: { {m: self.stats[m] for m in legal_moves} }")  # Debug
+        print(f"Legal moves: {legal_moves}")  # Debug
+        print(f"Current stats: { {m: self.stats[m] for m in legal_moves} }")  # Debug
         
         # Đảm bảo ít nhất 1 move được thử nghiệm
         unexplored = [m for m in legal_moves if self.stats[m]['count'] == 0]
@@ -152,7 +148,7 @@ class minimaxAndMcts:
     
         # Chọn theo UCT
         best_move = max(legal_moves, key=lambda m: self.uct_value(game_state, m))
-        # print(f"Selected move: {best_move}")  # Debug
+        print(f"Selected move: {best_move}")  # Debug
         return best_move
     
     def uct_value(self, game_state, move):
@@ -268,5 +264,4 @@ class minimaxAndMcts:
                 score += 100  # gần win
             elif line_length == 2 and empty_spaces >= 2:
                 score += 10   # bình thường
-        
         return score

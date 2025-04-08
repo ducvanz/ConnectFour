@@ -4,7 +4,12 @@ import numpy as np
 import pickle
 from copy import deepcopy
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from Constant import RED, YELLOW, IDLE
+
 
 class ConnectFourBoard:
     ###
@@ -21,7 +26,7 @@ class ConnectFourBoard:
     #       history         :   history[RED] sẽ lưu trữ lịch sử đấu của RED
     ###
 
-    def __init__(self, shape:tuple[int, int] =(7, 7), first_to_move:int =RED, save_history:bool =False):
+    def __init__(self, shape:tuple[int, int] =(6, 7), first_to_move:int =RED, save_history:bool =False):
         """Initialize the Connect Four game."""
         # Board dimensions
         self.rows = shape[0]
@@ -80,7 +85,7 @@ class ConnectFourBoard:
 
         return ((self.rows - 1) - np.count_nonzero(self.board, axis=0))
 
-    def get_avalable_columns(self) :
+    def get_available_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""
         unordered = np.where(self.get_available() > -1)[0]
         mid = unordered.size // 2  # Xác định chỉ mục giữa
@@ -247,8 +252,6 @@ class ConnectFourBoard:
         """Check if the board is full of piece. There no place to keep playing"""
 
         return np.count_nonzero(self.board) == self.board.size
-    
-    
     def copy(self) :
         clone = ConnectFourBoard(shape=self.shape, save_history=False)
         clone.reset_game(self.turn, self.board)
