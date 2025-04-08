@@ -44,11 +44,9 @@ class ConnectFourBoard:
         """Append history-stack of the game board, if it did save history"""
 
         if hasattr(self, 'history') :           # if this board was initilized with history
-<<<<<<< Updated upstream
-            self.history[self.turn].append[(current_state, move_valuate)]
-=======
+
             self.history[self.turn].append((deepcopy(current_state) * self.turn, move_valuate))
->>>>>>> Stashed changes
+
 
     def create_board(self, initilize_state:np.array =None):
         """Create an empty game board."""
@@ -249,8 +247,7 @@ class ConnectFourBoard:
         """Check if the board is full of piece. There no place to keep playing"""
 
         return np.count_nonzero(self.board) == self.board.size
-<<<<<<< Updated upstream
-=======
+    
     
     def copy(self) :
         clone = ConnectFourBoard(shape=self.shape, save_history=False)
@@ -280,17 +277,15 @@ class ConnectFourBoard:
         np.save(label_file_path, new_label_data)
 
 
-def load_history_data(train_file_path='data/DefaultTrainingSet.npy', label_file_path='data/DefaultLabelSet.npy') :
-    """Khuyến khích tự viết lại hàm load, không thì bay RAM"""
+    def load_history_data(train_file_path='data/DefaultTrainingSet.npy', label_file_path='data/DefaultLabelSet.npy') :
+        """Khuyến khích tự viết lại hàm load, không thì bay RAM"""
 
-    train_data = None
-    label_data = None
+        train_data = None
+        label_data = None
 
-    if os.path.exists(train_file_path) and os.path.exists(label_file_path):
-            # Load lại dữ liệu cũ
-        train_data = np.load(train_file_path)
-        label_data = np.load(label_file_path)
-    
-    return train_data, label_data
->>>>>>> Stashed changes
-    
+        if os.path.exists(train_file_path) and os.path.exists(label_file_path):
+                # Load lại dữ liệu cũ
+            train_data = np.load(train_file_path)
+            label_data = np.load(label_file_path)
+        
+        return train_data, label_data
