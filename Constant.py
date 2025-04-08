@@ -5,7 +5,6 @@ YELLOW  = - RED
 IDLE    = 0             # Ô trống, chưa đánh
 
 
-WIDTH = 700            # Screen width
-
+WIDTH = 600             # Screen width
 FIRST_MOVING = RED
     

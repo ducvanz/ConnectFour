@@ -22,6 +22,7 @@ from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
 from AI_AlphaGo.minimaxAndMCTS import minimaxAndMcts
+from AI_AlphaGo.Deep import Deep
 
 from AI_AlphaGo.minimaxAndRandom import MinimaxAndRandom
 from AI_AlphaGo.MCTS import MonteCarloTreeSearch
@@ -85,7 +86,7 @@ class MatchMaker:
             ai2_timeout: Maximum time in seconds for AI 2 to compute a move
         """
 
-        self.game = ConnectFourBoard(first_to_move=FIRST_MOVING, save_history= True)
+        self.game = ConnectFourBoard(first_to_move=FIRST_MOVING)
 
         # Setup user interface window
         self.width = width
@@ -429,20 +430,21 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MinimaxAI(timeout=2.5),
-        player2=minimaxAndMcts(timeout=2.5),
+        player1=Hugeman(WIDTH),
+        player2=MinimaxAI(timeout=0.5),
         display_game=True,
         delay=0.5,
-        games=2
+        games=1
     )
 
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
-    X, y = ai_vs_ai.prepare_training_data()
-    print(X.shape)
-    print(X[1], y[1])
-    with open("/DL/Files/data.pkl", "wb") as f:
-        pickle.dump((X, y), f)
+    # X, y = ai_vs_ai.prepare_training_data()
+    # print(X.shape)
+    # print(X[1], y[1])
+    # with open("/DL/Files/data.pkl", "wb") as f:
+    #     pickle.dump((X, y), f)
+
 
     print('\n\n', ai_vs_ai.player2.stat)
