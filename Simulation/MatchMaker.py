@@ -15,15 +15,18 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))         # Để import file từ folder khác
 
-from Constant import RED, YELLOW, WIDTH, FIRST_MOVING, DISPLAY_TURN_RUNTIME
-from Board import ConnectFourBoard
+from Constant import RED, YELLOW, IDLE,  WIDTH, FIRST_MOVING
+from Simulation.Board import ConnectFourBoard
 from AI_AlphaGo.think_one import Think_One
 from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
 from AI_AlphaGo.minimaxAndMCTS import minimaxAndMcts
 
-from Human import Hugeman
+from AI_AlphaGo.minimaxAndRandom import MinimaxAndRandom
+from AI_AlphaGo.MCTS import MonteCarloTreeSearch
+
+from Simulation.Human import Hugeman
 
 class Colors(Enum):
     BLUE = (0, 0, 255)
@@ -61,10 +64,15 @@ class MatchMaker:
     #           Player.get_move(ConnectFourBoard) :       return column, evaluate()     ->      Cột muốn đánh và kết quả đánh giá, từ input(Board.ConnectFourBoard)
     ###
     
-    def __init__(self, 
-                 player1, player2, 
+    def __init__(self,
+                 player1, player2,
+                 shape=(7,7),  
                  display_game=True, delay=0.5, games=1, 
-                 width = WIDTH):
+                 width = WIDTH,
+                 train_export_path:str =None,
+                 label_export_path:str =None,
+                 sleep_between_games=1,
+                 display_turn_runtime=True):
         """Initialize the AI vs AI game runner.
         
         Args:
@@ -89,6 +97,8 @@ class MatchMaker:
         self.display_game = display_game
         self.delay = delay
         self.games = games
+        self.display_turn_runtime = display_turn_runtime
+        self.sleep_between_games = sleep_between_games
         
         # Setup player
         self.player1 = player1
@@ -162,13 +172,6 @@ class MatchMaker:
         """Display statistics after all games."""
         ai1_name = self.player1.name
         ai2_name = self.player2.name
-        
-        if not self.display_game:
-            print(f"\nResults after {self.games} games:")
-            print(f"Red ({ai1_name}): {self.stats['ai1_wins']} ({self.stats['ai1_wins']/self.games*100:.1f}%)")
-            print(f"Yellow ({ai2_name}): {self.stats['ai2_wins']} ({self.stats['ai2_wins']/self.games*100:.1f}%)")
-            print(f"Draws: {self.stats['draws']} ({self.stats['draws']/self.games*100:.1f}%)")
-            return
             
         self.screen.fill(Colors.WHITE.value)
         font = pg.font.Font(None, 50)
@@ -240,10 +243,11 @@ class MatchMaker:
                     raise Exception(msg)
                     
             except Exception as e:
+                print(self.game.board)
                 print(f"Error in AI move generation: {traceback.TracebackException.from_exception(e)}")
                 traceback.print_exc()
                 print('Randomize move will kick in')
-                time.sleep(5)
+                time.sleep(0)
 
                 valid_columns = self.game.get_available_columns()
                 if len(valid_columns) != 0:
@@ -280,10 +284,10 @@ class MatchMaker:
                 self.stats["draws"] += 1
 
             # Record actual compute time for debugging
-            if DISPLAY_TURN_RUNTIME :
+            if self.display_turn_runtime :
                 compute_time = time.time() - move_start_time
                 if compute_time > 0.0:  # Only report if it took more than the threshold
-                    print(f"{current_player.name} computed move in {compute_time:.2f}s")
+                    print(f"{current_player.name[:40].ljust(40)} computed move in {compute_time:.2f}s")
 
             # Add delay for visualization
             if self.display_game and self.delay > 0:
@@ -296,8 +300,8 @@ class MatchMaker:
         # Show the final state and winner
         if self.display_game:
             self.show_win_notification(winner)
-            time.sleep(1)  # Give some time to see the winner
-        
+            time.sleep(self.sleep_between_games)  # Give some time to see the winner
+
         return winner
     
     def run(self):
@@ -306,6 +310,7 @@ class MatchMaker:
         ai2_name = self.player2.name
         
         for i in range(1, self.games+1):
+            start_time = time.time()
             if self.display_game :
                 pg.display.set_caption(f"AI vs AI - Game {i}/{self.games} - {ai1_name} vs {ai2_name}")
             
@@ -314,15 +319,33 @@ class MatchMaker:
             if result is None:  # User quit
                 break
                 
+            playtime = time.time() - start_time
+            playturn = np.sum(self.game.board != IDLE)
             # Print progress if not displaying
-            if (not self.display_game) and self.games > 0:
-                print(f"Game {i+1}/{self.games} complete. " +
-                      f"Red ({ai1_name}): {self.stats['ai1_wins']}, " +
-                      f"Yellow ({ai2_name}): {self.stats['ai2_wins']}, " +
-                      f"Draws: {self.stats['draws']}")
-        
-        self.show_stats()
-        
+            if (not self.display_game) :
+                print(f"Game {i:>4}/{self.games:>4} complete. " +
+                    f"Red ({ai1_name}): {self.stats['ai1_wins']:>3}, " +
+                    f"Yellow ({ai2_name}): {self.stats['ai2_wins']:>3}, " +
+                    f"Draws: {self.stats['draws']:>3}, " +
+                    f"running {playturn} turn in {playtime} seconds")
+                
+            if self.train_export_path is not None :
+                if winner != 0 :
+                    self.game.export_history(winner, train_file_path=self.train_export_path,
+                                                    label_file_path=self.label_export_path)
+                
+
+        if self.display_game :
+            self.show_stats()
+
+
+        print(f"\nResults after {self.games} games:")
+        print(f"Red ({ai1_name}): {self.stats['ai1_wins']} ({self.stats['ai1_wins']/self.games*100:.1f}%)")
+        print(f"Yellow ({ai2_name}): {self.stats['ai2_wins']} ({self.stats['ai2_wins']/self.games*100:.1f}%)")
+        print(f"Draws: {self.stats['draws']} ({self.stats['draws']/self.games*100:.1f}%)")
+
+
+
         # Clean up pygame
         if self.display_game:
             pg.quit()
@@ -400,6 +423,10 @@ def main():
 if __name__ == '__main__':
     # main()
 
+    # file_path = [os.path.abspath("DL/data/Train_RandomizeMinimax.npy"), 
+    #              os.path.abspath("DL/data/Label_RandomizeMinimax.npy")]
+    file_path = [None, None]
+
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
         player1=MinimaxAI(timeout=2.5),
@@ -418,3 +445,4 @@ if __name__ == '__main__':
     with open("/DL/Files/data.pkl", "wb") as f:
         pickle.dump((X, y), f)
 
+    print('\n\n', ai_vs_ai.player2.stat)

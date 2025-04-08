@@ -6,10 +6,10 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Simulation.Board import ConnectFourBoard
-from Constant import RED, YELLOW, IDLE 
+from Constant import RED, YELLOW, IDLE, WIDTH
 
 class Hugeman :
-    def __init__(self, screen_width, color=RED, timeout=None) :
+    def __init__(self, screen_width=WIDTH, color=RED, timeout=None) :
         self.name = 'Hugeman player'
         self.width = screen_width
         self.color = color
