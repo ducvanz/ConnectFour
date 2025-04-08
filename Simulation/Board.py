@@ -83,7 +83,19 @@ class ConnectFourBoard:
     def get_available_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""
         return np.where(self.get_available() > -1)[0]
-
+    
+    def get_next_open_row(self, col):
+        """
+        Tìm hàng trống thấp nhất trong cột được chỉ định
+        Trả về:
+        - int: số hàng nếu tìm thấy
+        - None: nếu cột đã đầy
+        """
+        for row in reversed(range(self.rows)):
+            if self.board[row][col] == IDLE:
+                return row
+        return None
+    
     def drop_piece(self, column:int, move_valuated:np.array=None):
         """Attempt to drop a piece in the specified column.
         

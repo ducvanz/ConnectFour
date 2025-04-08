@@ -261,8 +261,8 @@ class minimaxAndMcts:
             if line_length >= 4:
                 score += 1000  # lớn hơn 4 thì win
             elif line_length == 3 and empty_spaces >= 1:
-                score += 100  # gần win
+                score += 1000  # gần win
             elif line_length == 2 and empty_spaces >= 2:
-                score += 10   # bình thường
+                score += 100   # bình thường
         
         return score
