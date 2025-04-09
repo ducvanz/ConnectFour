@@ -104,9 +104,11 @@ class MatchMaker:
         self.player1 = player1
         self.player2 = player2
         
+        # For export data for training DL
         self.stats = {"ai1_wins": 0, "ai2_wins": 0, "draws": 0}
         self.history_games = []
-
+        self.train_export_path = train_export_path
+        self.label_export_path = label_export_path
         
         # Initialize pygame if needed
         if self.display_game:
@@ -314,9 +316,9 @@ class MatchMaker:
             if self.display_game :
                 pg.display.set_caption(f"AI vs AI - Game {i}/{self.games} - {ai1_name} vs {ai2_name}")
             
-            result = self.play_game()
+            winner = self.play_game()
             self.history_games.append(self.game)
-            if result is None:  # User quit
+            if winner is None:  # User quit
                 break
                 
             playtime = time.time() - start_time
@@ -429,9 +431,10 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MinimaxAI(timeout=2.5),
-        player2=minimaxAndMcts(timeout=2.5),
+        player2=MinimaxAI(depth=6),
+        player1=Hugeman(),
         display_game=True,
+        display_turn_runtime=True,
         delay=0.5,
         games=2
     )
@@ -439,10 +442,3 @@ if __name__ == '__main__':
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
-    X, y = ai_vs_ai.prepare_training_data()
-    print(X.shape)
-    print(X[1], y[1])
-    with open("/DL/Files/data.pkl", "wb") as f:
-        pickle.dump((X, y), f)
-
-    print('\n\n', ai_vs_ai.player2.stat)

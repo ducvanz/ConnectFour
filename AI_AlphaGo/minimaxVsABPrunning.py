@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Simulation.Board import ConnectFourBoard
 from Constant import RED, YELLOW, IDLE 
 
-DEFAULT_WEIGHT = [0.4, 0.2, 0.4, 0.2, 0.03]
+DEFAULT_WEIGHT = [0.04, 0.02, 0.04, 0.02, 0.03]
 
 class MinimaxAI:
     def __init__(self, color=RED, weight=DEFAULT_WEIGHT, depth=5, timeout=None):
@@ -83,13 +83,14 @@ class MinimaxAI:
         
         return score
 
-    def minimax(self, game: ConnectFourBoard, depth: int, alpha: float, beta: float, maximizingPlayer: bool):
+    def minimax(self, game: ConnectFourBoard, depth: int, Alpha: float, Beta: float, maximizingPlayer: bool):
         """Minimax algorithm with alpha-beta pruning to find the best move."""
 
-        if game.check_win(self.color)  :
-            return [1.0]
-        if game.check_win(-self.color) :
-            return [-1.0]
+        if game.check_win(-game.turn)  :
+            if self.color == -game.turn :
+                return [1]
+            else :
+                return [-1]
         if game.is_full() :
             return [0.0]
         if depth == 0: 
@@ -98,41 +99,52 @@ class MinimaxAI:
         valid_columns = game.get_available_columns()
 
         if maximizingPlayer:  # RED player
-            scores = [-1.0] * game.columns
+            scores = [-1.0] * game.columns      # default value for invavlid_column or bad_evaluate_col. Just mean -1 because we won't need this kind of columns
+            alpha = -np.inf
+            
             for col in valid_columns:
-
                 # Backup current state
                 temp_game = game.copy()
 
                 # Drop piece and recurse
                 if temp_game.drop_piece(col):  # Only drop if the column is not full
-                    scores[col] = min(self.minimax(temp_game, depth - 1, alpha, beta, False)) * 0.9
+                    e = self.minimax(temp_game, depth - 1, alpha, Beta, False)
+                    scores[col] = np.min(e).astype(float)
+
+                    if (depth == self.depth) :
+                        print('Turn 1: ', col, scores[col] / 0.9)
                     
                     # Pruning
                     alpha = max(alpha, scores[col])
-                    if alpha >= beta:
+                    if alpha > Beta:
                         break 
-            return scores
+            return np.array(scores)
 
         else:  # YELLOW player
             scores = [1.0] * game.columns
+            beta = np.inf
             for col in valid_columns:
                 # Backup current state
                 temp_game = game.copy()
 
                 # Drop piece and recurse
                 if temp_game.drop_piece(col):
-                    scores[col] = max(self.minimax(temp_game, depth - 1, alpha, beta, True)) * 0.9
+                    e = self.minimax(temp_game, depth - 1, Alpha, beta, True)
+                    scores[col] = np.max(e).astype(float)
+
+                    if (depth == self.depth - 1) :
+                        print('Turn 2: ', col, '\n', e, np.argmax(e)) 
+
                     # Pruning
                     beta = min(beta, scores[col])
-                    if alpha >= beta:
+                    if Alpha > beta:
                         break 
-            return scores
+            return np.array(scores) * 0.95
 
     def get_move(self, game: ConnectFourBoard):
         """Get the best move for the AI using Minimax."""
         evaluated = self.minimax(game, self.depth, -math.inf, math.inf, True)
 
-        # print(evaluated)
+        # print(np.argmax(evaluated))
 
-        return evaluated.index(max(evaluated)), evaluated
+        return np.argmax(evaluated), evaluated
