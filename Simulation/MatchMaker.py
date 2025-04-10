@@ -85,7 +85,7 @@ class MatchMaker:
             ai2_timeout: Maximum time in seconds for AI 2 to compute a move
         """
 
-        self.game = ConnectFourBoard(first_to_move=FIRST_MOVING, save_history= True)
+        self.game = ConnectFourBoard(shape=shape, first_to_move=FIRST_MOVING, save_history= True)
 
         # Setup user interface window
         self.width = width
@@ -214,6 +214,7 @@ class MatchMaker:
         # Main game loop. Each TURN
         current_turn = FIRST_MOVING
         while not game_over:
+            # print(self.game.board)
             move_start_time = time.time()
             current_player = self.player1 if (current_turn == self.player1.color) else self.player2
 
@@ -431,14 +432,17 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player2=MinimaxAI(depth=6),
-        player1=Hugeman(),
+        player1=MinimaxAndRandom(depth=5, random_percent_start=0.7, random_percent_end=0.05, eor=0.6, notPrunning=False),
+        player2=MinimaxAndRandom(depth=5, random_percent_start=0.9, random_percent_end=0.05, eor=0.6, notPrunning=False),
         display_game=True,
         display_turn_runtime=True,
         delay=0.5,
-        games=2
+        games=1
     )
 
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
+
+    print(ai_vs_ai.player1.stat)
+    print(ai_vs_ai.player2.stat)

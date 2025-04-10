@@ -10,7 +10,7 @@ from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI, DEFAULT_WEIGHT
 from Constant import RED, YELLOW, IDLE 
 
 class MinimaxAndRandom :
-    def __init__ (self, random_percent_start=0.5, random_percent_end=0.1, depth=5, weight=DEFAULT_WEIGHT, eor=0.8) :
+    def __init__ (self, random_percent_start=0.5, random_percent_end=0.1, depth=5, weight=DEFAULT_WEIGHT, notPrunning=False, eor=0.8) :
         self.rand_range = random_percent_start - random_percent_end
         self.rand_min = random_percent_end
 
@@ -18,8 +18,8 @@ class MinimaxAndRandom :
         self.name = self.org_name
         self.color = IDLE
 
-        self.depth = depth
-        self.weight = weight
+        self.runner = [Random(),
+                       MinimaxAI(weight=weight, depth=depth, notPrunning=notPrunning)]
 
         self.eor = eor      # Board được phủ kín bao nhiêu % thì ngừng giảm tỉ lệ random. Càng lớn thì tỉ lệ random kéo dài càng cao
 
@@ -34,15 +34,15 @@ class MinimaxAndRandom :
         p = self.rand_min + self.rand_range * empty_percent * self.eor
 
         if random.random() < p :
-            runner = Random()
+            current_runner = self.runner[0]
             self.stat['Random'] += 1
         else :
-            runner = MinimaxAI(weight=self.weight, depth=self.depth)
+            current_runner = self.runner[1]
             self.stat['Minimax'] += 1
 
-        self.name = self.org_name + ':' + runner.name
-        runner.set_color(self.color)
-        return runner.get_move(game)
+        self.name = self.org_name + ':' + current_runner.name
+        current_runner.set_color(self.color)
+        return current_runner.get_move(game)
 
 
 class Random :

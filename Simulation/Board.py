@@ -72,7 +72,6 @@ class ConnectFourBoard:
         
         self.create_board(initilize_state)
 
-
         if hasattr(self, 'history') :
             self.history[RED] = []
             self.history[YELLOW] = []

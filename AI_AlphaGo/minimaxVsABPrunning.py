@@ -15,12 +15,12 @@ from Constant import RED, YELLOW, IDLE
 DEFAULT_WEIGHT = [0.04, 0.02, 0.04, 0.02, 0.03]
 
 class MinimaxAI:
-    def __init__(self, color=RED, weight=DEFAULT_WEIGHT, depth=5, timeout=None):
-        self.name = 'MinimaxAI'
+    def __init__(self, weight=DEFAULT_WEIGHT, depth=5, notPrunning=False, color=RED, timeout=None):
+        self.name = 'MinimaxAI depth=' + str(depth)
         self.color = color
         self.depth = depth
 
-
+        self.notPrunning = notPrunning
         self.weight = { 'allie': [weight[0], weight[1]], 
                         'enemy': [weight[2], weight[3]],
                        'center': weight[4]}
@@ -83,7 +83,7 @@ class MinimaxAI:
         
         return score
 
-    def minimax(self, game: ConnectFourBoard, depth: int, Alpha: float, Beta: float, maximizingPlayer: bool):
+    def minimax(self, game: ConnectFourBoard, depth: int, maximizingPlayer: bool, Alpha:float=-math.inf, Beta:float=math.inf):
         """Minimax algorithm with alpha-beta pruning to find the best move."""
 
         if game.check_win(-game.turn)  :
@@ -100,7 +100,7 @@ class MinimaxAI:
 
         if maximizingPlayer:  # RED player
             scores = [-1.0] * game.columns      # default value for invavlid_column or bad_evaluate_col. Just mean -1 because we won't need this kind of columns
-            alpha = -np.inf
+            alpha = -math.inf
             
             for col in valid_columns:
                 # Backup current state
@@ -108,42 +108,51 @@ class MinimaxAI:
 
                 # Drop piece and recurse
                 if temp_game.drop_piece(col):  # Only drop if the column is not full
-                    e = self.minimax(temp_game, depth - 1, alpha, Beta, False)
+                    e = self.minimax(temp_game, depth - 1, False, Alpha=alpha)
                     scores[col] = np.min(e).astype(float)
 
-                    if (depth == self.depth) :
-                        print('Turn 1: ', col, scores[col] / 0.9)
+                    # if (depth == self.depth) :
+                    #     print('Turn 1: ', col, scores[col] / 0.95)
                     
                     # Pruning
                     alpha = max(alpha, scores[col])
-                    if alpha > Beta:
+                    if (not self.notPrunning) and (alpha > Beta):
+                        if scores[col] < 0 :
+                            scores[col] *= 0.98
+                        else :
+                            scores[col] *= 1.02
                         break 
             return np.array(scores)
 
         else:  # YELLOW player
             scores = [1.0] * game.columns
-            beta = np.inf
+            beta = math.inf
+
             for col in valid_columns:
                 # Backup current state
                 temp_game = game.copy()
 
                 # Drop piece and recurse
                 if temp_game.drop_piece(col):
-                    e = self.minimax(temp_game, depth - 1, Alpha, beta, True)
+                    e = self.minimax(temp_game, depth - 1, True, Beta=beta)
                     scores[col] = np.max(e).astype(float)
 
-                    if (depth == self.depth - 1) :
-                        print('Turn 2: ', col, '\n', e, np.argmax(e)) 
+                    # if (depth == self.depth - 1) :
+                    #     print('Turn 2: ', col, '\n', e, np.argmax(e)) 
 
                     # Pruning
                     beta = min(beta, scores[col])
-                    if Alpha > beta:
+                    if (not self.notPrunning) and (Alpha > beta) :
+                        if scores[col] < 0 :
+                            scores[col] *= 1.02
+                        else :
+                            scores[col] *= 0.98
                         break 
             return np.array(scores) * 0.95
 
     def get_move(self, game: ConnectFourBoard):
         """Get the best move for the AI using Minimax."""
-        evaluated = self.minimax(game, self.depth, -math.inf, math.inf, True)
+        evaluated = self.minimax(game, self.depth, True)
 
         # print(np.argmax(evaluated))
 
