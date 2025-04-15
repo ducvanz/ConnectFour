@@ -117,10 +117,7 @@ class MinimaxAI:
                     # Pruning
                     alpha = max(alpha, scores[col])
                     if (not self.notPrunning) and (alpha > Beta):
-                        if scores[col] < 0 :
-                            scores[col] *= 0.98
-                        else :
-                            scores[col] *= 1.02
+                        scores[col] += abs(scores[col]) * 0.5
                         break 
             return np.array(scores)
 
@@ -143,10 +140,7 @@ class MinimaxAI:
                     # Pruning
                     beta = min(beta, scores[col])
                     if (not self.notPrunning) and (Alpha > beta) :
-                        if scores[col] < 0 :
-                            scores[col] *= 1.02
-                        else :
-                            scores[col] *= 0.98
+                        scores[col] -= abs(scores[col]) * 0.5
                         break 
             return np.array(scores) * 0.95
 

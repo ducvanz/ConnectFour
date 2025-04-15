@@ -206,6 +206,13 @@ class MatchMaker:
         self.player1.set_color(FIRST_MOVING)
         self.player2.set_color(-FIRST_MOVING)
         self.game.reset_game(firstMoving = FIRST_MOVING)
+        # self.game.create_board(initilize_state=np.array([[ 1,  0, -1, -1, -1,  0,  0],
+        #                                                  [ 1,  0,  1,  1,  1,  0, -1],
+        #                                                 [ 1,  0, -1,  1, -1,  0,  1],
+        #                                                 [-1,  0,  1,  1,  1,  0, -1],
+        #                                                 [ 1,  0, -1, -1, -1,  0, -1],
+        #                                                 [-1,  0,  1,  1, -1,  0,  1],
+        #                                                 [-1,  1,  1,  1, -1, -1, -1]]))
         
         self.draw_game()
         winner = 0
@@ -242,7 +249,6 @@ class MatchMaker:
                 # Validate the move before applying
                 if (col < 0) or (col >= self.game.columns) or (self.game.board[0, col] != 0):
                     msg = f'Invalid move response from {current_player.name} at column: {col}'
-                    print(self.game.board)
                     raise Exception(msg)
                     
             except Exception as e:
@@ -432,8 +438,8 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player1=MinimaxAndRandom(depth=5, random_percent_start=0.7, random_percent_end=0.05, eor=0.6, notPrunning=False),
-        player2=MinimaxAndRandom(depth=5, random_percent_start=0.9, random_percent_end=0.05, eor=0.6, notPrunning=False),
+        player2=MinimaxAI(depth=5),
+        player1=Hugeman(),
         display_game=True,
         display_turn_runtime=True,
         delay=0.5,
@@ -443,6 +449,3 @@ if __name__ == '__main__':
     os.system("cls" if os.name == "nt" else "clear")   
     # Run the games
     ai_vs_ai.run()
-
-    print(ai_vs_ai.player1.stat)
-    print(ai_vs_ai.player2.stat)
