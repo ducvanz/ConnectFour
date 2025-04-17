@@ -8,7 +8,7 @@ from Simulation.Board import ConnectFourBoard
 from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI, DEFAULT_WEIGHT
 from Constant import RED, YELLOW, IDLE 
 
-thesh_hold = [3/42, 7/42, 11/42, 17/42, 23/42, 27/42, 29/42]
+thesh_hold = [3/42, 7/42, 11/42, 17/42, 21/42, 25/42, 29/42]
 ### The idea is
 ### Start from depth=2, after each thresh_hold increase by 1
 ### Except for thresh_hold[0], it come from 2 go up to 4 immediately (the minimum to see the twin move like _**_)
@@ -43,8 +43,12 @@ class minimaxDepthInc :
 
     def get_move(self, game:ConnectFourBoard) :
         depth = minimaxDepthInc.suite_depth(game)
-        
-        self.name = self.org_name + f" depth={depth}"
 
         runner = self.module(depth=depth, color=self.color)
-        return runner.get_move(game)
+        self.name = self.org_name + runner.name
+        
+        col, evalue = runner.get_move(game)
+        # print(col)
+        # print(evalue)
+
+        return col, evalue

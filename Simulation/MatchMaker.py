@@ -443,11 +443,11 @@ if __name__ == '__main__':
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
         shape=(6, 7),
-        player1=EnhanceMinimaxAI(depth=5),
-        player2=MinimaxAI(depth=8),
+        player1=minimaxDepthInc(EnhanceMinimaxAI),
+        player2=EnhanceMinimaxAI(depth=5),
         display_game=True,
         display_turn_runtime=True,
-        delay=0,
+        delay=0.5,
         games=1
     )
 

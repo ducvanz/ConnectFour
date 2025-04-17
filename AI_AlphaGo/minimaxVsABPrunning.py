@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Simulation.Board import ConnectFourBoard
 from Constant import RED, YELLOW, IDLE 
 
-DEFAULT_WEIGHT = [0.04, 0.02, 0.04, 0.02, 0.03, 0.9, 0.9]
+DEFAULT_WEIGHT = [0.04, 0.02, 0.04, 0.02, 0.03, 0.2, 0.2]
 """
     0. Allies three straight
     1. Allies two straight
@@ -132,7 +132,7 @@ class MinimaxAI:
                     
                     # Pruning
                     alpha = max(alpha, scores[col])
-                    if (not self.notPrunning) and (alpha > Beta):
+                    if (not self.notPrunning) and (alpha >= Beta):
                         scores[col] += abs(scores[col]) * 0.1
                         break 
             return np.array(scores)
@@ -155,10 +155,10 @@ class MinimaxAI:
 
                     # Pruning
                     beta = min(beta, scores[col])
-                    if (not self.notPrunning) and (Alpha > beta) :
+                    if (not self.notPrunning) and (Alpha >= beta) :
                         scores[col] -= abs(scores[col]) * 0.1
                         break 
-            return np.array(scores) * 0.95
+            return np.array(scores) * 0.97
 
     def get_move(self, game: ConnectFourBoard):
         """Get the best move for the AI using Minimax."""
@@ -179,7 +179,7 @@ class EnhanceMinimaxAI(MinimaxAI) :
     ###
 
     def __init__(self, weight=DEFAULT_WEIGHT, depth=5, notPrunning=False, color=RED, timeout=None) :
-        super().__init__(weight=DEFAULT_WEIGHT, depth=5, notPrunning=False, color=RED, timeout=None)
+        super().__init__(weight=weight, depth=depth, notPrunning=notPrunning, color=color, timeout=timeout)
 
         self.name = 'Enhance_MinimaxAI depth=' + str(depth)
         self.weight['allie'].append(weight[-2])
@@ -237,6 +237,8 @@ class EnhanceMinimaxAI(MinimaxAI) :
         free_position = game.get_available()
         for c in range(game.columns):
             r = free_position[c]
+            if r + 4 >= game.rows :
+                continue
             col_array = game.board.T[c]
             window = col_array[r:r + 4].tolist()
             this_score, this_notice = self.evaluate_window(window, turn)
