@@ -87,19 +87,8 @@ class ConnectFourBoard:
     def get_available_columns(self) :
         """Trả về list các cột còn vị trí ô trống. Không ghi rõ trống tới hàng nào."""
         unordered = np.where(self.get_available() > -1)[0]
-        mid = unordered.size // 2  # Xác định chỉ mục giữa
-        ordered = [unordered[mid]]  # Bắt đầu với phần tử ở giữa
         
-        left, right = mid - 1, mid + 1
-        while left >= 0 or right < unordered.size:
-            if right < unordered.size:
-                ordered.append(unordered[right])
-                right += 1
-            if left >= 0:
-                ordered.append(unordered[left])
-                left -= 1
-        
-        return ordered
+        return unordered
 
     def drop_piece(self, column:int, move_valuated:np.array=None):
         """Attempt to drop a piece in the specified column.

@@ -58,12 +58,16 @@ class Random :
         self.color = color
 
     def get_move(self, game:ConnectFourBoard):
+        evalue = np.zeros()
         temp, near_end = three_straight(game, self.color)       # if enemy not blocking, make him pay
         if (temp != None) :
-            return temp, None
+            evalue[temp] = 1
+            return temp, evalue
 
         temp, avoid = three_straight(game, -self.color)        # _*** defense
         if (temp != None) :
+            # for i in game.get_available_columns() :
+
             return temp, None
         
         for i in near_end :             # if a move is critical, but no need to avoid, pressing it
@@ -106,6 +110,9 @@ def three_straight(game:ConnectFourBoard, color:int) :
     Find 2 position like this, dead end
     Args:
         color:      The color we want to looking at. Constant.RED or Constant.YELLOW.
+    Return:
+        1. Column must fight
+        2. Column must avoid
         
     Side Effect:
         insight(color)[0] store the position must have to be filled. No other option

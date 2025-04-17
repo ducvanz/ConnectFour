@@ -20,10 +20,14 @@ from Simulation.Board import ConnectFourBoard
 from AI_AlphaGo.think_one import Think_One
 from AI_AlphaGo.think_two import Think_Two
 from AI_AlphaGo.think_three import Think_Three
-from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI
-from AI_AlphaGo.minimaxAndMCTS import minimaxAndMcts
 
+from AI_AlphaGo.minimaxVsABPrunning import MinimaxAI, EnhanceMinimaxAI
+from AI_AlphaGo.minimaxAndMCTS import minimaxAndMcts
 from AI_AlphaGo.minimaxAndRandom import MinimaxAndRandom
+from AI_AlphaGo.minimaxDepthInc import minimaxDepthInc
+from AI_AlphaGo.minimaxWithNemo import MinimaxAI_Nemo
+from AI_AlphaGo.OrginalNemo import MinimaxAI2
+
 from AI_AlphaGo.MCTS import MonteCarloTreeSearch
 
 from Simulation.Human import Hugeman
@@ -206,13 +210,12 @@ class MatchMaker:
         self.player1.set_color(FIRST_MOVING)
         self.player2.set_color(-FIRST_MOVING)
         self.game.reset_game(firstMoving = FIRST_MOVING)
-        # self.game.create_board(initilize_state=np.array([[ 1,  0, -1, -1, -1,  0,  0],
-        #                                                  [ 1,  0,  1,  1,  1,  0, -1],
-        #                                                 [ 1,  0, -1,  1, -1,  0,  1],
-        #                                                 [-1,  0,  1,  1,  1,  0, -1],
-        #                                                 [ 1,  0, -1, -1, -1,  0, -1],
-        #                                                 [-1,  0,  1,  1, -1,  0,  1],
-        #                                                 [-1,  1,  1,  1, -1, -1, -1]]))
+        # self.game.create_board(initilize_state=np.array([[ 0, 0, 0, -1, 0, 0, 0],
+        #                                                 [ 0, 0, 0, 1, 0, 0, 0],
+        #                                                 [ 0, 0, 0, -1, 0, 0, 0],
+        #                                                 [ 0, 0, 0, 1, 0, 0, 0],
+        #                                                 [ 0, 0, 0, -1, 0, 0, 0],
+        #                                                 [ 0, 0, 0, 1, 0, 0, 0]]))
         
         self.draw_game()
         winner = 0
@@ -311,6 +314,7 @@ class MatchMaker:
             self.show_win_notification(winner)
             time.sleep(self.sleep_between_games)  # Give some time to see the winner
 
+        print(self.game.board)
         return winner
     
     def run(self):
@@ -438,11 +442,12 @@ if __name__ == '__main__':
 
     # Set up the AI vs AI game
     ai_vs_ai = MatchMaker(
-        player2=MinimaxAI(depth=5),
-        player1=Hugeman(),
+        shape=(6, 7),
+        player1=EnhanceMinimaxAI(depth=5),
+        player2=MinimaxAI(depth=8),
         display_game=True,
         display_turn_runtime=True,
-        delay=0.5,
+        delay=0,
         games=1
     )
 
