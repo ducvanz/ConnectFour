@@ -7,15 +7,15 @@ ConnectFour là một trò chơi Cờ Bốn (Connect Four) được phát triể
 - Ứng dụng mô hình học sâu cho:
   + Trực tiếp sử dụng mô hình như là một AI thông thường để trả về nước đi tối ưu sau khi nhận bàn cờ là đầu vào.
   + Sử dụng Deep Learning như là một hàm đánh giá cho 2 thuật toán bên trên (tối ưu về thời gian và hạn chế những sai xót khi tự định nghĩa hàm đánh giá)
-Phương pháp làm được nhóm tham khảo từ quyển sách ![AlphagoSimpled](https://drive.google.com/file/d/1GOLnD0mIPZDWMdVE3WDmm5effnih66Bd/view?usp=drive_link)
+Phương pháp làm được nhóm tham khảo từ quyển sách [AlphagoSimpled](https://drive.google.com/file/d/1GOLnD0mIPZDWMdVE3WDmm5effnih66Bd/view?usp=drive_link)
 
 # Quá trình phát triển
 
-## Xây dựng giao diện thử nghiệm code, thiết kế cấu trúc chung dự án
-## Xây dựng các mô hình AI bằng thuật toán
-## Thử nghiệm - tối ưu
-## Ứng dụng deep learning
-## Tích hợp deep learning vào thuật toán
+-  Xây dựng giao diện thử nghiệm code, thiết kế cấu trúc chung dự án
+-  Xây dựng các mô hình AI bằng thuật toán
+-  Thử nghiệm - tối ưu
+-  Ứng dụng deep learning
+-  Tích hợp deep learning vào thuật toán
 
 # Cấu trúc code
 
@@ -31,7 +31,7 @@ Lưu ý: Cần cài python và thư viện tensorflow trước.
  
 # Thành viên nhóm thực hiện
 
-Mai Đức Văn - 23021746 (nhóm trường)
+Mai Đức Văn - 23021746 (nhóm trưởng)
 Nguyễn Kim Trung Đức - 23021533
 Ngọ Viết Thuyết - 23021730
 Nguyễn Trường Sơn - 23021686
